@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="纯前端多媒体时间记录器">
+  <title>lifeRecorder · 多媒体生活记录</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">L</span><span>lifeRecorder</span></a>
+    <nav class="nav-tabs" aria-label="页面导航">
+      <button class="nav-tab active" data-view="timeline">时间轴</button>
+      <button class="nav-tab" data-view="publish">发布记录</button>
+      <button class="nav-tab" data-view="settings">GitHub 设置</button>
+    </nav>
+    <button id="newRecordBtn" class="primary small">＋ 新建记录</button>
+  </header>
+
+  <main>
+    <section id="publishView" class="view hidden">
+      <div class="page-heading">
+        <div><span class="eyebrow">NEW MEMORY</span><h1>记录此刻</h1><p>文字、照片、视频与声音，都可以成为时间的注脚。</p></div>
+        <button id="closeComposer" class="ghost">返回时间轴</button>
+      </div>
+      <form id="recordForm" class="composer">
+        <label class="field"><span>记录标题</span><input id="titleInput" maxlength="80" required placeholder="给此刻起一个名字"></label>
+        <label class="field"><span>文字内容</span><textarea id="textInput" rows="6" placeholder="今天发生了什么？"></textarea></label>
+        <label class="field"><span>标签</span><input id="tagsInput" placeholder="旅行, 日常, 灵感（逗号分隔）"></label>
+
+        <div class="media-grid">
+          <label class="upload-card document"><input id="documentInput" type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.json" multiple><span class="upload-icon">▤</span><strong>添加文档</strong><small>支持 Office / PDF / TXT 等</small></label>
+          <label class="upload-card image"><input id="imageInput" type="file" accept="image/*" multiple><span class="upload-icon">▧</span><strong>添加相片</strong><small>支持多选 JPG / PNG / WEBP</small></label>
+          <label class="upload-card video"><input id="videoInput" type="file" accept="video/*" multiple><span class="upload-icon">▶</span><strong>添加视频</strong><small>支持多选 MP4 / WebM</small></label>
+          <label class="upload-card audio"><input id="audioInput" type="file" accept="audio/*" multiple><span class="upload-icon">♫</span><strong>添加音频</strong><small>支持多选 MP3 / WAV / M4A</small></label>
+          <button id="recordAudioBtn" class="upload-card record" type="button"><span class="upload-icon">●</span><strong>录制声音</strong><small id="recordHint">点击开始，再次点击结束</small></button>
+        </div>
+        <div id="previewArea" class="preview-area hidden"></div>
+        <div class="form-footer">
+          <label class="checkbox"><input id="githubToggle" type="checkbox" checked> 保存到本地 Git 仓库并推送 GitHub</label>
+          <div><button id="clearFormBtn" type="button" class="ghost">清空</button><button type="submit" class="primary">发布记录</button></div>
+        </div>
+      </form>
+    </section>
+
+    <section id="settingsView" class="view hidden">
+      <div class="page-heading"><div><span class="eyebrow">OPTIONAL SYNC</span><h1>GitHub 设置</h1><p>凭据仅保存在当前浏览器会话，不会写入源代码。</p></div></div>
+      <form id="settingsForm" class="settings-card">
+        <div class="settings-grid">
+          <label class="field"><span>仓库所有者</span><input id="ownerInput" placeholder="your-name"></label>
+          <label class="field"><span>仓库名称</span><input id="repoInput" placeholder="time-records"></label>
+          <label class="field"><span>分支</span><input id="branchInput" value="main"></label>
+          <label class="field"><span>Fine-grained Token</span><input id="tokenInput" type="password" autocomplete="off" placeholder="github_pat_..."></label>
+        </div>
+        <p class="security-note">安全提示：请使用仅对目标仓库拥有 Contents 读写权限的细粒度 Token。大视频不建议上传至普通 GitHub 仓库。</p>
+        <div class="form-footer"><button id="clearSettingsBtn" type="button" class="ghost danger">清除凭据</button><button type="submit" class="primary">保存到当前会话</button></div>
+      </form>
+    </section>
+
+    <section id="timelineView" class="view">
+      <div class="hero">
+        <div><span class="eyebrow">YOUR ARCHIVE</span><h1>时间有迹可循</h1><p>把散落的文字、影像和声音，重新串成属于你的时间线。</p></div>
+        <div class="hero-stat"><strong id="recordCount">0</strong><span>条记录</span></div>
+      </div>
+      <div class="toolbar">
+        <div class="type-filters" role="group" aria-label="记录类型">
+          <button class="filter active" data-type="all">全部</button><button class="filter" data-type="document">文档</button><button class="filter" data-type="video">视频</button><button class="filter" data-type="audio">音频</button><button class="filter" data-type="voice">语音</button><button class="filter" data-type="text">文本</button>
+        </div>
+        <div class="filter-controls">
+          <input id="dateFilter" type="date" aria-label="按日期筛选">
+          <select id="sortSelect" aria-label="排序"><option value="desc">最新优先</option><option value="asc">最早优先</option></select>
+          <button id="resetFilter" class="icon-button" title="清除筛选">↻</button>
+        </div>
+      </div>
+      <div id="timeline" class="timeline"></div>
+      <button id="loadMoreBtn" class="load-more hidden">加载更多记录</button>
+    </section>
+  </main>
+
+  <dialog id="detailDialog"><button id="closeDialog" class="dialog-close" aria-label="关闭">×</button><button id="prevDetail" class="detail-nav prev" aria-label="上一项">‹</button><div id="detailContent"></div><button id="nextDetail" class="detail-nav next" aria-label="下一项">›</button></dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <template id="emptyTemplate"><div class="empty-state"><div class="empty-art">◌</div><h2>时间轴还是空的</h2><p>发布第一条文字、相片、视频或声音记录。</p><button class="primary empty-create">创建第一条记录</button></div></template>
+  <script src="app.js"></script>
+</body>
+</html>

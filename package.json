@@ -1,0 +1,10 @@
+{
+  "name": "life-recorder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "按日期时间归档多媒体记录到本地 Git 并推送 GitHub",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check app.js && node --check server.js"
+  }
+}
